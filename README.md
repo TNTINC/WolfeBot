@@ -4,3 +4,4 @@ A telegram bot :P
 * aiotg
 * colorama
 * pillow
+* markovify

@@ -19,7 +19,7 @@ bot = Bot(os.environ["API_TOKEN"])
 
 basekeyboard = {'keyboard': [[{'text': '💡 Suggest'},{'text': '⭐️ Vote'}],[{'text': '⚠️ Report'},{'text': '🐾 Credits'}]], 'one_time_keyboard': True, 'resize_keyboard': True}
 
-@bot.command(r"^/(start|help)")
+@bot.command(r"^\/(help|start)(\s*$|@WolfeLegacyBB?ot)") # Don't match commands aimed at other bots
 async def welcome(chat, match):
 	await chat.send_sticker(sticker="BQADAwADAgADZUASA3hbI2mGeTbkAg")
 	await chat.send_text("\

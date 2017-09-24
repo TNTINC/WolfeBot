@@ -13,3 +13,5 @@ The main function of the bot (or at least the most frequently used) is the `/yif
 > Note that it will try to find the image in telegram's cache before uploading it. This saves on bandwidth and makes the bot faster.
 
 Replying to an image with `/fullsize` will make wolfe send said image again, uncompressed.
+---
+This is under heavy development at the moment, and isn't considered stable. Just FYI.

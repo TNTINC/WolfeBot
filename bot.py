@@ -22,7 +22,10 @@ basekeyboard = {'keyboard': [[{'text': '💡 Suggest'},{'text': '⭐️ Vote'}],
 @bot.command(r"^/(start|help)")
 async def welcome(chat, match):
 	await chat.send_sticker(sticker="BQADAwADAgADZUASA3hbI2mGeTbkAg")
-	await chat.send_text("Hello, welcome to WolfeBot. This bot is currently under maintenance - please hang on while we rebuild it from scratch for some issues we've had.\n\n<b>The /yiff function works again! Thanks everyone for the support!</b>\nFor further info please visit the channel @furrycat", parse_mode="HTML")
+	await chat.send_text("\
+	Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n\
+	For further info please visit the channel @furrycat\
+	<em>If it goes absolutely haywire, throw a line at @icefla</em>", parse_mode="HTML")
 	return
 
 @bot.command('/debugdump')
@@ -33,27 +36,31 @@ def dump(chat, match):
 def weather(chat, match):
 	return chat.reply('*fucks your life*')
 
+# Roleplay (owo)
 @bot.command('\*(.+)\*')
 def roleplay(chat, match):
 	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
 		return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
-@bot.command('^OwOO')
+# Respond to OwO appropriately
+@bot.command('^OwO')
 def owo(chat, match):
 	owo = ['whats this??', '*notices ur buldge*', '>//w//<', '*pounces on u*', '*sneaks in your bed and cuddles u*', '*nozzles u*', '*pounces on u and sinks his nozzle inside your fluffy fur*', '*scratches ur ears* x3']
 	return chat.send_text(random.choice(owo))
 
+# just why
 @bot.command('^wolfe sieg')
 def owo(chat, match):
 	owo = ['What the fuck is wrong with you', 'No.', 'Can we stop please?', 'Is it really necessary?','What about you stop?', 'WHY', 'I wish I didn\'t read tbh.', 'Uh, okay, i guess', 'No, no NO NO NO', 'I\'d rather not reply', 'Hitler was overrated tbh', 'True story bro']
 	return chat.send_text(random.choice(owo))
 
-
+# Stand up for self
 @bot.command('^wolfe kys')
 def owo(chat, match):
 	owo = ['No u', 'u', 'no', 'consider suicide', 'How can i kill myself if i\'m a bunch of bits?', 'why would i', 'i see no reason', 'uhm', 'thats okay', 'ehm', 'your fake and gay']
 	return chat.send_text(random.choice(owo))
 
+# Query the database for an image and send it
 @bot.command('^(\/*)yiff')
 async def yiff(chat, match):
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
@@ -76,6 +83,7 @@ async def yiff(chat, match):
 		con.execute('UPDATE media SET tg_id = ? WHERE path = ?', (tres['result']['photo'][-1]['file_id'], r[0]))
 		con.commit()
 
+# If someone replies "fullsize" to an image we've sent, send the full image uncompressed
 @bot.command('^(\/*)fullsize')
 async def fullsize(chat, match):
 	if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
@@ -87,6 +95,7 @@ async def fullsize(chat, match):
 				a = await chat.send_document(f, caption='Here you go!')
 	return
 
+# I'm not entirely sure what this does
 @bot.command('^(\/*)delete')
 def delet(chat, match):
 	if chat.message['from']['id'] in [184151234, 266175335]:
@@ -106,14 +115,17 @@ def delet(chat, match):
 				return chat.send_text('This image doesn\'t exist!')
 	return
 
+# wolfe yiff me
 @bot.command('^wolfe (.+) me')
 def roleplay(chat, match):
 	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
 
+# i have no idea
 @bot.command('who\'s keo?')
 def keo(chat, match):
 	return chat.send_text('A really really cute fox!')
 
+# Praise the bulge
 @bot.command('bulge')
 def bulge(chat, match):
 	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:

@@ -24,44 +24,44 @@ async def welcome(chat, match):
 	await chat.send_sticker(sticker="BQADAwADAgADZUASA3hbI2mGeTbkAg")
 	await chat.send_text("\
 	Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n\
-	For further info please visit the channel @furrycat\
-	<em>If it goes absolutely haywire, throw a line at @icefla</em>", parse_mode="HTML")
+	For further info please visit the channel @furrycat\n\
+	<em>If it goes absolutely haywire, throw a line at</em> @icefla", parse_mode="HTML")
 	return
 
-@bot.command('/debugdump')
+@bot.command(r'^\/debugdump')
 def dump(chat, match):
 	return chat.reply(str(chat.message))
 
-@bot.command('^fml')
+@bot.command(r'^fml')
 def weather(chat, match):
 	return chat.reply('*fucks your life*')
 
 # Roleplay (owo)
-@bot.command('\*(.+)\*')
+@bot.command(r'\*(.+)\*')
 def roleplay(chat, match):
 	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
 		return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately
-@bot.command('^OwO')
+@bot.command(r'^OwO')
 def owo(chat, match):
 	owo = ['whats this??', '*notices ur buldge*', '>//w//<', '*pounces on u*', '*sneaks in your bed and cuddles u*', '*nozzles u*', '*pounces on u and sinks his nozzle inside your fluffy fur*', '*scratches ur ears* x3']
 	return chat.send_text(random.choice(owo))
 
 # just why
-@bot.command('^wolfe sieg')
+@bot.command(r'^wolfe sieg')
 def owo(chat, match):
 	owo = ['What the fuck is wrong with you', 'No.', 'Can we stop please?', 'Is it really necessary?','What about you stop?', 'WHY', 'I wish I didn\'t read tbh.', 'Uh, okay, i guess', 'No, no NO NO NO', 'I\'d rather not reply', 'Hitler was overrated tbh', 'True story bro']
 	return chat.send_text(random.choice(owo))
 
 # Stand up for self
-@bot.command('^wolfe kys')
+@bot.command(r'^wolfe kys')
 def owo(chat, match):
 	owo = ['No u', 'u', 'no', 'consider suicide', 'How can i kill myself if i\'m a bunch of bits?', 'why would i', 'i see no reason', 'uhm', 'thats okay', 'ehm', 'your fake and gay']
 	return chat.send_text(random.choice(owo))
 
 # Query the database for an image and send it
-@bot.command('^(\/*)yiff')
+@bot.command(r'^(\/?)yiff')
 async def yiff(chat, match):
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
 
@@ -84,7 +84,7 @@ async def yiff(chat, match):
 		con.commit()
 
 # If someone replies "fullsize" to an image we've sent, send the full image uncompressed
-@bot.command('^(\/*)fullsize')
+@bot.command(r'^(\/?)fullsize')
 async def fullsize(chat, match):
 	if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
 		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
@@ -96,7 +96,7 @@ async def fullsize(chat, match):
 	return
 
 # I'm not entirely sure what this does
-@bot.command('^(\/*)delete')
+@bot.command(r'^(\/?)delete')
 def delet(chat, match):
 	if chat.message['from']['id'] in [184151234, 266175335]:
 		if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
@@ -116,7 +116,7 @@ def delet(chat, match):
 	return
 
 # wolfe yiff me
-@bot.command('^wolfe (.+) me')
+@bot.command(r'^wolfe (.+) me')
 def roleplay(chat, match):
 	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
 

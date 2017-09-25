@@ -20,18 +20,20 @@ con.commit()
 RES_FOLDER = 'res/'
 
 data = []
+count = 0
 
+# For every file in every subdirectory of res/, try to open it and add it to the database if it can be opened
 for f in glob('%s*/*.*' % RES_FOLDER):
 	fn = f[len(RES_FOLDER):]
 
-	fold, fnam = fn.split('/')
-	fnam, ext = fnam.rsplit('.', 1)
+	folder, file_name = fn.split('/')
+	file_name, file_type = file_name.rsplit('.', 1)
 
-	if ext not in ['jpg', 'jpeg', 'png', 'gif']:
+	if file_type not in ['jpg', 'jpeg', 'png', 'gif']:
 		continue
 		print('Skipping %s' % fn) 
 
-	print(fold,fnam,ext)
+	print(folder,file_name,file_type)
 
 	try:
 		im = Image.open(f)
@@ -40,7 +42,10 @@ for f in glob('%s*/*.*' % RES_FOLDER):
 		rename(f, '%s_broken' % f)
 		continue
 
-	data += [(fn, ext)] 
+	data += [(fn, file_type)]
+	count += 1
 
 con.executemany("INSERT OR IGNORE INTO media (path, filetype) VALUES (?,?)", data)
 con.commit()
+
+print('%s images' % count)

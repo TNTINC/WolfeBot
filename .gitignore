@@ -2,6 +2,7 @@
 res/
 
 # Databases are instance specific!
+wolfe.db
 *.db
 
 # Python stuff below

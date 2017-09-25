@@ -25,6 +25,7 @@ async def welcome(chat, match):
 	await chat.send_text("\
 	Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n\
 	For further info please visit the channel @WolfeBotNews\n\
+	Bug reports and feature requests ==> https://github.com/TNTINC/WolfeBot/issues \n\
 	<em>If it goes absolutely haywire, throw a line at</em> @icefla", parse_mode="HTML")
 	return
 

@@ -1,3 +1,7 @@
+# Res is big, and variable.
+res/
+
+# Python stuff below
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -62,7 +62,7 @@ def owo(chat, match):
 	return chat.send_text(random.choice(owo))
 
 # Query the database for an image and send it
-@bot.command(r'^\/?yiff\s*$')
+@bot.command(r'\/?yiff\s*$')
 async def yiff(chat, match):
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
 

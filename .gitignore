@@ -1,6 +1,9 @@
 # Res is big, and variable.
 res/
 
+# Databases are instance specific!
+*.db
+
 # Python stuff below
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -31,7 +31,7 @@ async def welcome(chat, match):
 
 @bot.command(r'^\/debugdump')
 def dump(chat, match):
-	return chat.reply(str(chat.message))
+	return chat.reply(str(chat.message["from"]["id"]))
 
 @bot.command(r'^fml')
 def weather(chat, match):
@@ -96,10 +96,10 @@ async def fullsize(chat, match):
 				a = await chat.send_document(f, caption='Here you go!')
 	return
 
-# I'm not entirely sure what this does
+# Delete an image from the database
 @bot.command(r'^(\/?)delete')
 def delet(chat, match):
-	if chat.message['from']['id'] in [184151234, 266175335]:
+	if chat.message['from']['id'] in [184151234, 266175335, 174908617]:
 		if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
 			pid = chat.message['reply_to_message']['photo'][-1]['file_id']
 			res = con.execute('SELECT path FROM media WHERE tg_id = ?', (pid,)).fetchone()

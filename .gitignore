@@ -1,6 +1,8 @@
 # Res is big, and variable.
 res/
 
+.vscode/
+
 # Databases are instance specific!
 wolfe.db
 *.db

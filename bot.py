@@ -31,7 +31,7 @@ async def welcome(chat, match):
 
 @bot.command(r'^\/debugdump')
 def dump(chat, match):
-	return chat.reply(str(chat.message["from"]["id"]))
+	return chat.reply(str(chat.message["from"]["id"]) + str(chat.message["chat"]["id"]))
 
 @bot.command(r'^fml')
 def weather(chat, match):
@@ -97,7 +97,7 @@ async def fullsize(chat, match):
 	return
 
 # Delete an image from the database
-@bot.command(r'^(\/?)delete')
+#@bot.command(r'^(\/?)delete')
 def delet(chat, match):
 	if chat.message['from']['id'] in [184151234, 266175335, 174908617]:
 		if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
@@ -115,6 +115,39 @@ def delet(chat, match):
 			else:
 				return chat.send_text('This image doesn\'t exist!')
 	return
+
+# Flag an image for moderation
+@bot.command(r'^(\/?)delete')
+def disapprove(chat, match):
+	if 'reply_to_message' in chat.message \
+		and 'photo' in chat.message["reply_to_message"]:
+		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
+		res = con.execute('SELECT path FROM media WHERE tg_id = ?', (pid,)).fetchone()
+		if res:
+			print('[WARN] Soft deleting %s !!!' % res[0])
+			chat.reply("Deleting...")
+			
+			# Delete the message
+			bot.api_call("deleteMessage",
+				chat_id = chat.message["chat"]["id"],
+				message_id = chat.message["reply_to_message"]["message_id"]
+			)
+
+			# Set the photo's approved state to false
+			con.execute(
+				'UPDATE media SET approved = 0 WHERE tg_id = ?', 
+				(pid,)
+			)
+			con.commit()
+
+			# Notify @icefla
+			bot.api_call("sendMessage",
+				text="Something was flagged! : %s" % res[0],
+				chat_id="-262778980"
+			)
+
+		else:
+			return chat.send_text('This image doesn\'t exist!')
 
 # wolfe yiff me
 @bot.command(r'^wolfe (.+) me')

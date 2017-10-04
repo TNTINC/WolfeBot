@@ -64,6 +64,9 @@ def owo(chat, match):
 # Query the database for an image and send it
 @bot.command(r'\/?yiff\s*$')
 async def yiff(chat, match):
+	"""
+	Send a random approved image from the database.
+	"""
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
 
 	keyboard = {'inline_keyboard': [[{'text': '👍', 'callback_data': 'lke_%s' % r[2]},{'text': '👎', 'callback_data': 'dke_%s' % r[2]},{'text': '❤️ Fav', 'callback_data': 'fav_%s' % r[2]}]]}
@@ -87,6 +90,9 @@ async def yiff(chat, match):
 # If someone replies "fullsize" to an image we've sent, send the full image uncompressed
 @bot.command(r'^(\/?)fullsize')
 async def fullsize(chat, match):
+	"""
+	Send the full version of an image
+	"""
 	if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
 		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
 
@@ -96,33 +102,18 @@ async def fullsize(chat, match):
 				a = await chat.send_document(f, caption='Here you go!')
 	return
 
-# Delete an image from the database
-#@bot.command(r'^(\/?)delete')
-def delet(chat, match):
-	if chat.message['from']['id'] in [184151234, 266175335, 174908617]:
-		if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
-			pid = chat.message['reply_to_message']['photo'][-1]['file_id']
-			res = con.execute('SELECT path FROM media WHERE tg_id = ?', (pid,)).fetchone()
-			if res:
-				print('Deleting %s' % res[0])
-				con.execute('DELETE FROM media WHERE tg_id = ?', (pid,))
-				try:
-					os.remove(res[0])
-				except:
-					pass
-				con.commit()
-
-			else:
-				return chat.send_text('This image doesn\'t exist!')
-	return
-
 # Flag an image for moderation
 @bot.command(r'^(\/?)delete')
 def disapprove(chat, match):
+	"""
+	Flag an image for moderation.
+
+	Delete the image message, set the approved status of it to 0 in the database and notify @icefla.
+	"""
 	if 'reply_to_message' in chat.message \
 		and 'photo' in chat.message["reply_to_message"]:
 		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
-		res = con.execute('SELECT path FROM media WHERE tg_id = ?', (pid,)).fetchone()
+		res = con.execute('SELECT path, id FROM media WHERE tg_id = ?', (pid,)).fetchone()
 		if res:
 			print('[WARN] Soft deleting %s !!!' % res[0])
 			chat.reply("Deleting...")
@@ -142,19 +133,46 @@ def disapprove(chat, match):
 
 			# Notify @icefla
 			bot.api_call("sendMessage",
-				text="Something was flagged! : %s" % res[0],
+				text="Something was flagged! : %s : %s" % (res[1],res[0]),
 				chat_id="-262778980"
 			)
 
 		else:
-			return chat.send_text('This image doesn\'t exist!')
+			return chat.reply('This image doesn\'t exist!')
+
+
+@bot.command("/id (.?)$")
+def send_image_by_id(chat, match):
+	try:
+		photo_id = int(match[1])
+	except:
+		return
+
+	r = con.execute(
+		'SELECT tg_id, path FROM media WHERE id = ?', 
+		(photo_id,)
+	).fetchone()
+
+	if r:
+
+		tg_id = r[0]
+		path = r[1]
+
+		try:
+			print("Sent photo %s from cache" % match[1])
+			return chat.send_photo(photo=tg_id)
+		except:
+			print("Sent photo %s from disk" % match[1])
+			return chat.send_photo("%s%s" % (RES_FOLDER,path))
+	else:
+		return chat.reply("Image not found")
 
 # wolfe yiff me
 @bot.command(r'^wolfe (.+) me')
 def roleplay(chat, match):
 	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
 
-# i have no idea
+# <3
 @bot.command('who\'s keo?')
 def keo(chat, match):
 	return chat.send_text('A really really cute fox!')
@@ -182,9 +200,21 @@ def callback(chat, cq):
 
 @bot.inline
 def inline(request):
-
-	r = con.execute('SELECT tg_id, id FROM media WHERE tg_id IS NOT NULL ORDER BY random() LIMIT 25').fetchall()
-	return request.answer(results=[{'type': 'photo', 'id': str(pic[1]), 'photo_file_id': pic[0]} for pic in r], cache_time=0, is_personal=True, next_offset='Yolo')
+	r = con.execute(
+		'SELECT tg_id, id FROM media WHERE tg_id IS NOT NULL '
+		'ORDER BY random() LIMIT 25'
+	).fetchall()
+	return request.answer(
+		results=
+			[{
+				'type': 'photo', 
+				'id': str(pic[1]), 
+				'photo_file_id': pic[0]
+			} for pic in r], 
+		cache_time=0, 
+		is_personal=True, 
+		next_offset='Yolo'
+	)
 
 if __name__ == '__main__':
 	bot.run()

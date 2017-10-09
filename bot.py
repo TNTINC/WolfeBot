@@ -1,7 +1,10 @@
-import os, sqlite3, json, random, markovify, re
+import os, sqlite3, json, random, markovify, re, time
 from colorama import init, Fore, Style
 from aiotg import Bot
-from furry import Wolfe
+
+
+START_TIME = time.time()
+REQNUM = 0
 
 with open("rp_data.txt", "r") as f:
     text = f.read()
@@ -9,12 +12,13 @@ with open("rp_data.txt", "r") as f:
 text_model = markovify.NewlineText(text, state_size=2)
 del text
 
+vs = "V0.2"
+
 CACHE_DIR = 'cache/'
 RES_FOLDER = 'res/'
 
 con = sqlite3.connect('wolfe.db')
 
-wolfe = Wolfe(con)
 bot = Bot(os.environ["API_TOKEN"])
 
 basekeyboard = {'keyboard': [[{'text': '💡 Suggest'},{'text': '⭐️ Vote'}],[{'text': '⚠️ Report'},{'text': '🐾 Credits'}]], 'one_time_keyboard': True, 'resize_keyboard': True}
@@ -23,15 +27,44 @@ basekeyboard = {'keyboard': [[{'text': '💡 Suggest'},{'text': '⭐️ Vote'}],
 async def welcome(chat, match):
 	await chat.send_sticker(sticker="BQADAwADAgADZUASA3hbI2mGeTbkAg")
 	await chat.send_text("\
-	Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n\
-	For further info please visit the channel @WolfeBotNews\n\
-	Bug reports and feature requests ==> https://github.com/TNTINC/WolfeBot/issues \n\
-	<em>If it goes absolutely haywire, throw a line at</em> @icefla", parse_mode="HTML")
+		Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n\
+		For further info please visit the channel @WolfeBotNews\n\
+		Bug reports and feature requests ==> https://github.com/TNTINC/WolfeBot/issues \n\
+		<em>If it goes absolutely haywire, throw a line at</em> @icefla", 
+	parse_mode="HTML")
 	return
 
 @bot.command(r'^\/debugdump')
-def dump(chat, match):
-	return chat.reply(str(chat.message["from"]["id"]) + str(chat.message["chat"]["id"]))
+async def dump(chat, match):
+	dbsize = len(con.execute("SELECT id FROM media").fetchall())
+	db_amount_not_approved = len(
+		con.execute("SELECT id FROM media WHERE approved = 0")
+		.fetchall()
+	)
+	my_id = (await bot.get_me())["id"]
+
+	# uptime
+	m, s = divmod(time.time() - START_TIME, 60)
+	h, m = divmod(m, 60)
+	uptime_string = "%d:%02d:%02d" % (h, m, s)
+
+	dump = \
+	"""
+	-- {time} --
+	Wolfe {vs}
+	{dbsize} images in database, {db_amount_not_approved} not approved.
+	My id is {my_id}. Uptime is: {uptime}.
+	{reqnum} requests handled.
+	""".format(
+		time = time.strftime("%a, %d %b %Y %H:%M:%S UTC"),
+		vs = vs,
+		dbsize = dbsize,
+		db_amount_not_approved = db_amount_not_approved,
+		my_id = my_id,
+		uptime = uptime_string,
+		reqnum = REQNUM 
+	)
+	return chat.reply(dump)
 
 @bot.command(r'^fml')
 def weather(chat, match):
@@ -41,24 +74,32 @@ def weather(chat, match):
 @bot.command(r'\*(.+)\*')
 def roleplay(chat, match):
 	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
+		global REQNUM
+		REQNUM += 1
 		return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately
 @bot.command(r'^OwO')
 def owo(chat, match):
 	owo = ['whats this??', '*notices ur buldge*', '>//w//<', '*pounces on u*', '*sneaks in your bed and cuddles u*', '*nozzles u*', '*pounces on u and sinks his nozzle inside your fluffy fur*', '*scratches ur ears* x3']
+	global REQNUM
+	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # just why
 @bot.command(r'^wolfe sieg')
 def owo(chat, match):
 	owo = ['What the fuck is wrong with you', 'No.', 'Can we stop please?', 'Is it really necessary?','What about you stop?', 'WHY', 'I wish I didn\'t read tbh.', 'Uh, okay, i guess', 'No, no NO NO NO', 'I\'d rather not reply', 'Hitler was overrated tbh', 'True story bro']
+	global REQNUM
+	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # Stand up for self
 @bot.command(r'^wolfe kys')
 def owo(chat, match):
 	owo = ['No u', 'u', 'no', 'consider suicide', 'How can i kill myself if i\'m a bunch of bits?', 'why would i', 'i see no reason', 'uhm', 'thats okay', 'ehm', 'your fake and gay']
+	global REQNUM
+	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # Query the database for an image and send it
@@ -67,6 +108,9 @@ async def yiff(chat, match):
 	"""
 	Send a random approved image from the database.
 	"""
+	global REQNUM
+	REQNUM += 1
+
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
 
 	keyboard = {'inline_keyboard': [[{'text': '👍', 'callback_data': 'lke_%s' % r[2]},{'text': '👎', 'callback_data': 'dke_%s' % r[2]},{'text': '❤️ Fav', 'callback_data': 'fav_%s' % r[2]}]]}
@@ -93,6 +137,8 @@ async def fullsize(chat, match):
 	"""
 	Send the full version of an image
 	"""
+	global REQNUM
+	REQNUM += 1
 	if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
 		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
 
@@ -170,6 +216,8 @@ def send_image_by_id(chat, match):
 # wolfe yiff me
 @bot.command(r'^wolfe (.+) me')
 def roleplay(chat, match):
+	global REQNUM
+	REQNUM += 1
 	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
 
 # <3
@@ -184,26 +232,14 @@ def bulge(chat, match):
 		keyboard = {'inline_keyboard': [[{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'}]]}
 		return chat.send_text(random.choice(['Did someone say bulge?','*notices your buldge*', 'OwO', 'Murr~', 'Bulge?', 'I happen to have a lot of bulges.']), reply_markup=json.dumps(keyboard))
 
-#@bot.callback
-def callback(chat, cq):
-
-	action, num = cq.data.split('_')
-
-	replies = {}
-	replies['lke'] = 'You like this'
-	replies['dke'] = 'You dislike this'
-	replies['fav'] = 'Added into your favourites'
-
-	value = {'lke': 1, 'dke': -1}
-
-	return cq.answer(text=replies[action])
-
 @bot.inline
 def inline(request):
 	r = con.execute(
-		'SELECT tg_id, id FROM media WHERE tg_id IS NOT NULL '
+		'SELECT tg_id, id FROM media WHERE tg_id IS NOT NULL AND approved = 1 '
 		'ORDER BY random() LIMIT 25'
 	).fetchall()
+	global REQNUM
+	REQNUM += 1
 	return request.answer(
 		results=
 			[{

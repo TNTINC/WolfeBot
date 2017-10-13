@@ -187,7 +187,7 @@ def disapprove(chat, match):
 			return chat.reply('This image doesn\'t exist!')
 
 
-@bot.command("/id (.?)$")
+@bot.command(r"^\/?id (.*)$")
 def send_image_by_id(chat, match):
 	try:
 		photo_id = int(match[1])

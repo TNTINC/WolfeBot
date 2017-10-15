@@ -4,7 +4,16 @@ from aiotg import Bot
 
 
 START_TIME = time.time()
+
+# Count the number of handled requests via decorator
 REQNUM = 0
+def request(fn):
+	def wrapper(*args, **kwargs):
+		global REQNUM
+		REQNUM += 1
+		return fn(*args, **kwargs)
+	return wrapper
+
 
 with open("rp_data.txt", "r") as f:
     text = f.read()
@@ -41,6 +50,7 @@ async def dump(chat, match):
 		con.execute("SELECT id FROM media WHERE approved = 0")
 		.fetchall()
 	)
+	
 	my_id = (await bot.get_me())["id"]
 
 	# uptime
@@ -72,44 +82,39 @@ def weather(chat, match):
 
 # Roleplay (owo)
 @bot.command(r'\*(.+)\*')
+@request
 def roleplay(chat, match):
 	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
-		global REQNUM
-		REQNUM += 1
 		return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately
 @bot.command(r'^OwO')
+@request
 def owo(chat, match):
 	owo = ['whats this??', '*notices ur buldge*', '>//w//<', '*pounces on u*', '*sneaks in your bed and cuddles u*', '*nozzles u*', '*pounces on u and sinks his nozzle inside your fluffy fur*', '*scratches ur ears* x3']
-	global REQNUM
-	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # just why
 @bot.command(r'^wolfe sieg')
+@request
 def owo(chat, match):
 	owo = ['What the fuck is wrong with you', 'No.', 'Can we stop please?', 'Is it really necessary?','What about you stop?', 'WHY', 'I wish I didn\'t read tbh.', 'Uh, okay, i guess', 'No, no NO NO NO', 'I\'d rather not reply', 'Hitler was overrated tbh', 'True story bro']
-	global REQNUM
-	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # Stand up for self
 @bot.command(r'^wolfe kys')
+@request
 def owo(chat, match):
 	owo = ['No u', 'u', 'no', 'consider suicide', 'How can i kill myself if i\'m a bunch of bits?', 'why would i', 'i see no reason', 'uhm', 'thats okay', 'ehm', 'your fake and gay']
-	global REQNUM
-	REQNUM += 1
 	return chat.send_text(random.choice(owo))
 
 # Query the database for an image and send it
 @bot.command(r'\/?yiff\s*$')
+@request
 async def yiff(chat, match):
 	"""
 	Send a random approved image from the database.
 	"""
-	global REQNUM
-	REQNUM += 1
 
 	r = con.execute('SELECT path, tg_id, id FROM media WHERE approved = 1 ORDER BY random() LIMIT 1').fetchone()
 
@@ -133,12 +138,11 @@ async def yiff(chat, match):
 
 # If someone replies "fullsize" to an image we've sent, send the full image uncompressed
 @bot.command(r'^(\/?)fullsize')
+@request
 async def fullsize(chat, match):
 	"""
 	Send the full version of an image
 	"""
-	global REQNUM
-	REQNUM += 1
 	if 'reply_to_message' in chat.message and 'photo' in chat.message['reply_to_message']:
 		pid = chat.message['reply_to_message']['photo'][-1]['file_id']
 
@@ -200,10 +204,8 @@ def send_image_by_id(chat, match):
 	).fetchone()
 
 	if r:
-
 		tg_id = r[0]
 		path = r[1]
-
 		try:
 			print("Sent photo %s from cache" % match[1])
 			return chat.send_photo(photo=tg_id)
@@ -215,9 +217,8 @@ def send_image_by_id(chat, match):
 
 # wolfe yiff me
 @bot.command(r'^wolfe (.+) me')
+@request
 def roleplay(chat, match):
-	global REQNUM
-	REQNUM += 1
 	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
 
 # <3
@@ -233,13 +234,16 @@ def bulge(chat, match):
 		return chat.send_text(random.choice(['Did someone say bulge?','*notices your buldge*', 'OwO', 'Murr~', 'Bulge?', 'I happen to have a lot of bulges.']), reply_markup=json.dumps(keyboard))
 
 @bot.inline
+@request
 def inline(request):
+	"""
+	Handle inline requests by allowing the user to choose from a grid of random images
+	"""
 	r = con.execute(
 		'SELECT tg_id, id FROM media WHERE tg_id IS NOT NULL AND approved = 1 '
 		'ORDER BY random() LIMIT 25'
 	).fetchall()
-	global REQNUM
-	REQNUM += 1
+
 	return request.answer(
 		results=
 			[{

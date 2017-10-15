@@ -226,13 +226,6 @@ def roleplay(chat, match):
 def keo(chat, match):
 	return chat.send_text('A really really cute fox!')
 
-# Praise the bulge
-@bot.command('bulge')
-def bulge(chat, match):
-	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
-		keyboard = {'inline_keyboard': [[{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'},{'text': '🍆', 'url': 'https://t.me/bulge'}]]}
-		return chat.send_text(random.choice(['Did someone say bulge?','*notices your buldge*', 'OwO', 'Murr~', 'Bulge?', 'I happen to have a lot of bulges.']), reply_markup=json.dumps(keyboard))
-
 @bot.inline
 @request
 def inline(request):

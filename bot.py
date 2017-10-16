@@ -97,14 +97,14 @@ def owo(chat, match):
 # just why
 @bot.command(r'^wolfe sieg')
 @request
-def owo(chat, match):
+def sieg(chat, match):
 	owo = ['What the fuck is wrong with you', 'No.', 'Can we stop please?', 'Is it really necessary?','What about you stop?', 'WHY', 'I wish I didn\'t read tbh.', 'Uh, okay, i guess', 'No, no NO NO NO', 'I\'d rather not reply', 'Hitler was overrated tbh', 'True story bro']
 	return chat.send_text(random.choice(owo))
 
 # Stand up for self
 @bot.command(r'^wolfe kys')
 @request
-def owo(chat, match):
+def kys(chat, match):
 	owo = ['No u', 'u', 'no', 'consider suicide', 'How can i kill myself if i\'m a bunch of bits?', 'why would i', 'i see no reason', 'uhm', 'thats okay', 'ehm', 'your fake and gay']
 	return chat.send_text(random.choice(owo))
 
@@ -127,7 +127,7 @@ async def yiff(chat, match):
 		except RuntimeError:
 			print("Failed sending cached image %s" % r[0])
 		else:
-			return
+			return 
 
 	with open("%s%s" % (RES_FOLDER, r[0]), 'rb') as f:
 		tres = await chat.send_photo(f) #, reply_markup=json.dumps(keyboard))
@@ -218,8 +218,9 @@ def send_image_by_id(chat, match):
 # wolfe yiff me
 @bot.command(r'^wolfe (.+) me')
 @request
-def roleplay(chat, match):
-	return chat.send_text('*%ss %s*' % (match.group(1), chat.message['from']['first_name']))
+def yiffme(chat, match):
+	return chat.send_text('*%ss %s*' % (match.group(1),
+										chat.message['from']['first_name']))
 
 # <3
 @bot.command('who\'s keo?')

@@ -1,6 +1,12 @@
 # Res is big, and variable.
 res/
 
+.vscode/
+
+# Databases are instance specific!
+wolfe.db
+*.db
+
 # Python stuff below
 # Byte-compiled / optimized / DLL files
 __pycache__/

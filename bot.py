@@ -84,8 +84,8 @@ def weather(chat, match):
 @bot.command(r'\*(.+)\*')
 @request
 def roleplay(chat, match):
-	if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
-		return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
+	#if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
+	return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately
 @bot.command(r'^OwO')
@@ -196,7 +196,7 @@ def send_image_by_id(chat, match):
 	try:
 		photo_id = int(match[1])
 	except:
-		return
+		return chat.reply("That's not a number you silly willy. (Also beware this is a moderation command and not something to be toyed with)");
 
 	r = con.execute(
 		'SELECT tg_id, path FROM media WHERE id = ?', 
@@ -207,10 +207,10 @@ def send_image_by_id(chat, match):
 		tg_id = r[0]
 		path = r[1]
 		try:
-			print("Sent photo %s from cache" % match[1])
+			chat.send_text("Sent photo %s from cache" % match[1])
 			return chat.send_photo(photo=tg_id)
 		except:
-			print("Sent photo %s from disk" % match[1])
+			chat.send_text("Sent photo %s from disk" % match[1])
 			return chat.send_photo("%s%s" % (RES_FOLDER,path))
 	else:
 		return chat.reply("Image not found")

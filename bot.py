@@ -84,7 +84,6 @@ def weather(chat, match):
 @bot.command(r'\*(.+)\*')
 @request
 def roleplay(chat, match):
-	#if 'reply_to_message' in chat.message and chat.message['reply_to_message']['from']['id'] == 194903852:
 	return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately

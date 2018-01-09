@@ -84,6 +84,7 @@ def weather(chat, match):
 @bot.command(r'\*(.+)\*')
 @request
 def roleplay(chat, match):
+	
 	return chat.reply("*%s*" % text_model.make_short_sentence(200, tries=200).strip(" .*"))
 
 # Respond to OwO appropriately
@@ -190,12 +191,11 @@ def disapprove(chat, match):
 			return chat.reply('This image doesn\'t exist!')
 
 
-@bot.command(r"^\/id (\d+)$")
+@bot.command(r"^\/id (.*)$")
 def send_image_by_id(chat, match):
 	try:
-		photo_id = int(match.group(1))
-	except Exception as e:
-		print(e)
+		photo_id = int(match[1])
+	except:
 		return chat.reply("That's not a number you silly willy. (Also beware this is a moderation command and not something to be toyed with)");
 
 	r = con.execute(
@@ -207,7 +207,7 @@ def send_image_by_id(chat, match):
 		tg_id = r[0]
 		path = r[1]
 		try:
-			chat.send_text("Sent photo %s from cache" % match.group(1))
+			chat.send_text("Sent photo %s from cache" % match[1])
 			return chat.send_photo(photo=tg_id)
 		except:
 			chat.send_text("Sent photo %s from disk" % match[1])

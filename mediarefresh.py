@@ -30,8 +30,9 @@ for f in glob('%s*/*.*' % RES_FOLDER):
 	file_name, file_type = file_name.rsplit('.', 1)
 
 	if file_type not in ['jpg', 'jpeg', 'png', 'gif']:
-		continue
 		print('Skipping %s' % fn) 
+		continue
+		
 
 	print(folder,file_name,file_type)
 

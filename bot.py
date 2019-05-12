@@ -4,6 +4,7 @@ import json
 import random
 import re
 import time
+from config import config
 from colorama import init, Fore, Style
 from aiotg import Bot
 
@@ -21,21 +22,11 @@ def request(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-
-with open("rp_data.txt", "r") as f:
-    text = f.read()
-
-vs = "V0.2"
-
-CACHE_DIR = 'cache/'
-RES_FOLDER = 'res/'
+version_string = "V0.2"
 
 con = sqlite3.connect('wolfe.db')
 
-bot = Bot(os.environ["API_TOKEN"])
-
-basekeyboard = {'keyboard': [[{'text': '💡 Suggest'}, {'text': '⭐️ Vote'}], [
-    {'text': '⚠️ Report'}, {'text': '🐾 Credits'}]], 'one_time_keyboard': True, 'resize_keyboard': True}
+bot = Bot(os.environ[config["token_env_name"]])
 
 
 # Don't match commands aimed at other bots
@@ -75,7 +66,7 @@ async def dump(chat, match):
 	{reqnum} requests handled.
 	""".format(
             time=time.strftime("%a, %d %b %Y %H:%M:%S UTC"),
-            vs=vs,
+            version_string=version_string,
             dbsize=dbsize,
             db_amount_not_approved=db_amount_not_approved,
             my_id=my_id,
@@ -139,7 +130,7 @@ async def yiff(chat, match):
         else:
             return
 
-    with open("%s%s" % (RES_FOLDER, r[0]), 'rb') as f:
+    with open("%s%s" % (config["res_folder"], r[0]), 'rb') as f:
         tres = await chat.send_photo(f)  # , reply_markup=json.dumps(keyboard))
 
     if tres['ok']:
@@ -162,7 +153,7 @@ async def fullsize(chat, match):
         res = con.execute(
             'SELECT path FROM media WHERE tg_id = ?', (pid,)).fetchone()
         if res:
-            with open("%s%s" % (RES_FOLDER, res[0]), 'rb') as f:
+            with open("%s%s" % (config["res_folder"], res[0]), 'rb') as f:
                 await chat.send_document(f, caption='Here you go!')
     return
 
@@ -230,7 +221,7 @@ def send_image_by_id(chat, match):
             return chat.send_photo(photo=tg_id)
         except:
             chat.send_text("Sent photo %s from disk" % match[1])
-            return chat.send_photo("%s%s" % (RES_FOLDER, path))
+            return chat.send_photo("%s%s" % (config["res_folder"], path))
     else:
         return chat.reply("Image not found")
 

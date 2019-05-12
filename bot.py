@@ -188,14 +188,7 @@ def disapprove(chat, match):
                 (pid,)
             )
             con.commit()
-
-            # Notify @icefla
-            bot.api_call("sendMessage",
-                         text="Something was flagged! : %s : %s" % (
-                             res[1], res[0]),
-                         chat_id="-262778980"
-                         )
-
+            
         else:
             return chat.reply('This image doesn\'t exist!')
 

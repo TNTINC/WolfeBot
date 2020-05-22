@@ -46,7 +46,6 @@ SD = statsd.StatsClient(STATSD_ADDRESS, STATSD_PORT, prefix="wolfe")
 # Set up database connection and access methods
 DB = sqlite3.connect(DBASE, check_same_thread=False)
 
-
 class Image:
     def __init__(self, db_id, file_id, e6_id, url, path, deletes):
         self.db_id = db_id
@@ -105,7 +104,6 @@ def start(update: Update, context):
     update.message.reply_sticker("BQADAwADAgADZUASA3hbI2mGeTbkAg")
     update.message.reply_html(
         "Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n"
-        "For further info please visit the channel @WolfeBotNews\n"
         "Bug reports and feature requests ==> https://github.com/TNTINC/WolfeBot/issues \n"
         "<em>If it goes absolutely haywire, throw a line at</em> @icefla")
 

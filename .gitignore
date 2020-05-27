@@ -1,2 +1,5 @@
 res
 test
+.vscode
+wolfe.db
+*.sql

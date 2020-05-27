@@ -4,14 +4,17 @@ WolfeBot V2.0
 import os
 import logging
 import sqlite3
-from telegram.ext import Updater, CallbackContext, CommandHandler, MessageHandler, Filters, InlineQueryHandler
+from telegram.ext import Updater, CallbackContext, CommandHandler,\
+                         MessageHandler, Filters, InlineQueryHandler
 from telegram import Update, InlineQueryResultCachedPhoto
 import statsd
 
 # Logging
 LOG = logging.getLogger()
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
 # Get our config from the environment
 try:
@@ -92,7 +95,7 @@ def yiff(update: Update, context: CallbackContext):
         with SD.timer("command.yiff.disk"):
             with open("./res/"+img.path, "rb") as f:
                 resp = update.message.reply_photo(f)
-    elif img.url is not None: # File exists on different server, we must get file_id
+    elif img.url is not None: # File exists on internet, we must get file_id
         resp = update.message.reply_photo(img.url)
     # resp is message object, contains file_id's for all photo sizes.
     # We get the last one, which is the highest resolution.
@@ -103,13 +106,18 @@ def yiff(update: Update, context: CallbackContext):
 def start(update: Update, context):
     update.message.reply_sticker("BQADAwADAgADZUASA3hbI2mGeTbkAg")
     update.message.reply_html(
-        "Hello, welcome to WolfeBot. This bot is not completely stable yet, so don't be alarmed if it stops working for a bit!\n\n"
-        "Bug reports and feature requests ==> https://github.com/TNTINC/WolfeBot/issues \n"
+        "Hello, welcome to WolfeBot. This bot is not completely stable yet, "
+        "so don't be alarmed if it stops working for a bit!\n\n"
+        "Bug reports and feature requests ==> "
+        "https://github.com/TNTINC/WolfeBot/issues \n"
         "<em>If it goes absolutely haywire, throw a line at</em> @icefla")
 
-
+@SD.timer("command.inline")
 def inline(update: Update, context):
-    results = [InlineQueryResultCachedPhoto(img.db_id, img.file_id) for img in get_random_images(20, cached=True)]
+    results = [
+        InlineQueryResultCachedPhoto(img.db_id, img.file_id) 
+        for img in get_random_images(20, cached=True)
+    ]
     update.inline_query.answer(results, next_offset="1")
 
 
@@ -123,7 +131,7 @@ for h in [
     CommandHandler('help',  start),
 
     InlineQueryHandler(inline)
-    ]: UPDATER.dispatcher.add_handler(h)
+]: UPDATER.dispatcher.add_handler(h)
 
 
 # Run the bot, polling in debug, webhooks in staging_prod

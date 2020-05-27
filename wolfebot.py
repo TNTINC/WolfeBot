@@ -4,10 +4,12 @@ WolfeBot V2.0
 import os
 import logging
 import sqlite3
+from dataclasses import dataclass
 from telegram.ext import Updater, CallbackContext, CommandHandler,\
                          MessageHandler, Filters, InlineQueryHandler
 from telegram import Update, InlineQueryResultCachedPhoto
 import statsd
+from random import random
 
 # Logging
 LOG = logging.getLogger()
@@ -49,14 +51,14 @@ SD = statsd.StatsClient(STATSD_ADDRESS, STATSD_PORT, prefix="wolfe")
 # Set up database connection and access methods
 DB = sqlite3.connect(DBASE, check_same_thread=False)
 
+@dataclass
 class Image:
-    def __init__(self, db_id, file_id, e6_id, url, path, deletes):
-        self.db_id = db_id
-        self.file_id = file_id
-        self.e6_id = e6_id
-        self.url = url
-        self.path = path
-        self.deletes = deletes
+    db_id: str
+    file_id: str
+    e6_id: str
+    url: str
+    path: str
+    deletes: None
 
 @SD.timer("db.read.random_image")
 def get_random_image():
@@ -115,26 +117,43 @@ def start(update: Update, context):
 @SD.timer("command.inline")
 def inline(update: Update, context):
     results = [
-        InlineQueryResultCachedPhoto(img.db_id, img.file_id) 
+        InlineQueryResultCachedPhoto(img.db_id, img.file_id)
         for img in get_random_images(20, cached=True)
     ]
     update.inline_query.answer(results, next_offset="1")
+
+def statics(update: Update, context):
+    """ Respond to various messages with comedic rebuttals """
+    msg = update.message.lower()
+    reply = update.message.reply_text
+    if msg == "fml":
+        reply("*fucks your life*")
+    elif msg == "owo":
+        reply(random.choice([
+            'whats this??', '*notices ur buldge*', '>//w//<',
+            '*pounces on u*', '*sneaks in your bed and cuddles u*',
+            '*nozzles u*', '*pounces on u and sinks his nozzle inside '+\
+            'your fluffy fur*', '*scratches ur ears* x3']))
 
 
 # Set up the actual bot object
 UPDATER = Updater(TOKEN, use_context=True)
 for h in [
-    CommandHandler('yiff', yiff),
-    MessageHandler(Filters.regex(r"^yiff\s*"), yiff),
+    CommandHandler('yiff', yiff)
+    , MessageHandler(Filters.regex(r"^yiff\s*"), yiff)
     
-    CommandHandler('start', start),
-    CommandHandler('help',  start),
+    , CommandHandler('start', start)
+    , CommandHandler('help', start)
 
-    InlineQueryHandler(inline)
+    , MessageHandler(Filters.regex(r"^fml"), statics)
+    , MessageHandler(Filters.regex(r"^OwO"), statics)
+
+    , InlineQueryHandler(inline)
 ]: UPDATER.dispatcher.add_handler(h)
 
 
-# Run the bot, polling in debug, webhooks in staging_prod
+# Run the bot, polling in debug, webhooks in staging/prod
+# TODO: check if webhooks are actually necessary
 if DEBUG:
     UPDATER.start_polling()
     UPDATER.idle()

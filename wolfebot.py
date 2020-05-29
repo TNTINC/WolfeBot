@@ -1,15 +1,16 @@
 """
 WolfeBot V2.0
 """
-import os
 import logging
+import os
 import sqlite3
 from dataclasses import dataclass
-from telegram.ext import Updater, CallbackContext, CommandHandler,\
-                         MessageHandler, Filters, InlineQueryHandler
-from telegram import Update, InlineQueryResultCachedPhoto
+import random
+
 import statsd
-from random import random
+from telegram import InlineQueryResultCachedPhoto, Update
+from telegram.ext import (CallbackContext, CommandHandler, Filters,
+                          InlineQueryHandler, MessageHandler, Updater)
 
 # Logging
 LOG = logging.getLogger()
@@ -19,29 +20,28 @@ logging.basicConfig(
 )
 
 # Get our config from the environment
-try:
-    TOKEN = os.environ["wolfe_token"]
-except KeyError:
+TOKEN = os.getenv("wolfe_token")
+if TOKEN is None:
     LOG.error("Must specify token as environment variable 'wolfe_token'")
-    raise KeyError
-try:
-    DEBUG = os.environ["wolfe_debug"]
-except KeyError:
-    LOG.warning("wolfe_debug not specified, running in debug mode!!!")
+    os.exit(1)
+
+DEBUG = os.getenv("wolfe_debug")
+if DEBUG is None:
+    LOG.warning("wolfe_debug not specified, running in debug mode")
     DEBUG = True
-try:
-    DBASE = os.environ["wolfe_dbase"]
-except KeyError:
+
+DBASE = os.getenv("wolfe_dbase")
+if DBASE is None:
     LOG.warning("wolfe_dbase not specified, defaulting to ./wolfe.db")
     DBASE = "./wolfe.db"
-try:
-    STATSD_ADDRESS = os.environ["wolfe_statsd_address"]
-except KeyError:
+
+STATSD_ADDRESS = os.getenv("wolfe_statsd_address")
+if STATSD_ADDRESS is None:
     LOG.info("wolfe_statsd_address not specified, defaulting to 127.0.0.1")
     STATSD_ADDRESS = "127.0.0.1"
-try:
-    STATSD_PORT = os.environ["wolfe_statsd_port"]
-except KeyError:
+
+STATSD_PORT = os.getenv("wolfe_statsd_port")
+if STATSD_PORT is None:
     LOG.info("wolfe_statsd_port not specified, defaulting to 8125")
     STATSD_PORT = 8125
 
@@ -124,7 +124,7 @@ def inline(update: Update, context):
 
 def statics(update: Update, context):
     """ Respond to various messages with comedic rebuttals """
-    msg = update.message.lower()
+    msg = update.message.text.lower()
     reply = update.message.reply_text
     if msg == "fml":
         reply("*fucks your life*")
@@ -135,20 +135,19 @@ def statics(update: Update, context):
             '*nozzles u*', '*pounces on u and sinks his nozzle inside '+\
             'your fluffy fur*', '*scratches ur ears* x3']))
 
-
 # Set up the actual bot object
 UPDATER = Updater(TOKEN, use_context=True)
 for h in [
-    CommandHandler('yiff', yiff)
-    , MessageHandler(Filters.regex(r"^yiff\s*"), yiff)
+    CommandHandler('yiff', yiff),
+    MessageHandler(Filters.regex(r"^yiff\s*"), yiff),
     
-    , CommandHandler('start', start)
-    , CommandHandler('help', start)
+    CommandHandler('start', start),
+    CommandHandler('help', start),
 
-    , MessageHandler(Filters.regex(r"^fml"), statics)
-    , MessageHandler(Filters.regex(r"^OwO"), statics)
+    MessageHandler(Filters.regex(r"^fml"), statics),
+    MessageHandler(Filters.regex(r"^OwO"), statics),
 
-    , InlineQueryHandler(inline)
+    InlineQueryHandler(inline),
 ]: UPDATER.dispatcher.add_handler(h)
 
 

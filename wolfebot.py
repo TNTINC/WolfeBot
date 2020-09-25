@@ -3,6 +3,7 @@ WolfeBot V2.0
 """
 import logging
 import os
+import sys
 import sqlite3
 from dataclasses import dataclass
 import random
@@ -23,7 +24,7 @@ logging.basicConfig(
 TOKEN = os.getenv("wolfe_token")
 if TOKEN is None:
     LOG.error("Must specify token as environment variable 'wolfe_token'")
-    os.exit(1)
+    sys.exit(1)
 
 DEBUG = os.getenv("wolfe_debug")
 if DEBUG is None:
@@ -65,13 +66,13 @@ def get_random_image():
     return get_random_images(1)[0]
 
 @SD.timer("db.read.random_images")
-def get_random_images(n, cached=False):
+def get_random_images(num, cached=False):
     return [Image(*r) for r in DB.execute(
         "SELECT * "+
         "FROM images "+
         ("WHERE file_id != \"\" " if cached else "")+
         "ORDER BY RANDOM() "+
-        "LIMIT ?", (n,)).fetchall()]
+        "LIMIT ?", (num,)).fetchall()]
 
 @SD.timer("db.write.file_id")
 def save_file_id(db_id, file_id):
@@ -87,25 +88,25 @@ def save_file_id(db_id, file_id):
 
 # Command handlers
 @SD.timer("command.yiff")
-def yiff(update: Update, context: CallbackContext):
+def cb_yiff(update: Update, context: CallbackContext):
     """ Send random yiff image when yiff mentioned """
     img = get_random_image()
     if img.file_id is not None: # File exists on telegram servers already
         update.message.reply_photo(img.file_id)
-        return
-    if img.path is not None: # File exists on filesystem, we must get file_id
-        with SD.timer("command.yiff.disk"):
-            with open("./res/"+img.path, "rb") as f:
-                resp = update.message.reply_photo(f)
-    elif img.url is not None: # File exists on internet, we must get file_id
-        resp = update.message.reply_photo(img.url)
-    # resp is message object, contains file_id's for all photo sizes.
-    # We get the last one, which is the highest resolution.
-    file_id = resp["photo"][-1]["file_id"]
-    save_file_id(img.db_id, file_id)
+    else:
+        if img.path is not None: # File exists on filesystem, we must get file_id
+            with SD.timer("command.yiff.disk"):
+                with open("./res/"+img.path, "rb") as imgfile:
+                    resp = update.message.reply_photo(imgfile)
+        elif img.url is not None: # File exists on internet, we must get file_id
+            resp = update.message.reply_photo(img.url)
+        # resp is message object, contains file_id's for all photo sizes.
+        # We get the last one, which is the highest resolution.
+        file_id = resp["photo"][-1]["file_id"]
+        save_file_id(img.db_id, file_id)
 
 
-def start(update: Update, context):
+def cb_start(update: Update, context):
     update.message.reply_sticker("BQADAwADAgADZUASA3hbI2mGeTbkAg")
     update.message.reply_html(
         "Hello, welcome to WolfeBot. This bot is not completely stable yet, "
@@ -115,39 +116,36 @@ def start(update: Update, context):
         "<em>If it goes absolutely haywire, throw a line at</em> @icefla")
 
 @SD.timer("command.inline")
-def inline(update: Update, context):
+def cb_inline(update: Update, context):
     results = [
         InlineQueryResultCachedPhoto(img.db_id, img.file_id)
         for img in get_random_images(20, cached=True)
     ]
     update.inline_query.answer(results, next_offset="1")
 
-def statics(update: Update, context):
-    """ Respond to various messages with comedic rebuttals """
-    msg = update.message.text.lower()
-    reply = update.message.reply_text
-    if msg == "fml":
-        reply("*fucks your life*")
-    elif msg == "owo":
-        reply(random.choice([
-            'whats this??', '*notices ur buldge*', '>//w//<',
-            '*pounces on u*', '*sneaks in your bed and cuddles u*',
-            '*nozzles u*', '*pounces on u and sinks his nozzle inside '+\
-            'your fluffy fur*', '*scratches ur ears* x3']))
+def cb_fml(update: Update, context):
+    update.message.reply_text("*fucks your life*")
+
+def cb_owo(update: Update, context):
+    update.message.reply_text(random.choice([
+        'whats this??', '*notices ur buldge*', '>//w//<',
+        '*pounces on u*', '*sneaks in your bed and cuddles u*',
+        '*nozzles u*', '*pounces on u and sinks his nozzle inside '+\
+        'your fluffy fur*', '*scratches ur ears* x3']))
 
 # Set up the actual bot object
 UPDATER = Updater(TOKEN, use_context=True)
 for h in [
-    CommandHandler('yiff', yiff),
-    MessageHandler(Filters.regex(r"^yiff\s*"), yiff),
-    
-    CommandHandler('start', start),
-    CommandHandler('help', start),
+    CommandHandler('yiff', cb_yiff),
+    MessageHandler(Filters.regex(r"^yiff\s*"), cb_yiff),
 
-    MessageHandler(Filters.regex(r"^fml"), statics),
-    MessageHandler(Filters.regex(r"^OwO"), statics),
+    CommandHandler('start', cb_start),
+    CommandHandler('help', cb_start),
 
-    InlineQueryHandler(inline),
+    MessageHandler(Filters.regex(r"^fml"), cb_fml),
+    MessageHandler(Filters.regex(r"^OwO"), cb_owo),
+
+    InlineQueryHandler(cb_inline),
 ]: UPDATER.dispatcher.add_handler(h)
 
 

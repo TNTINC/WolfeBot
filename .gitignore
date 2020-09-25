@@ -1,5 +1,6 @@
 res
-test
+test*
 .vscode
 wolfe.db
 *.sql
+runbb

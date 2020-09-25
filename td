@@ -9,6 +9,7 @@ Additionally, it:
 
 In future, it should:
   [ ] Regularly poll e621 and add popular posts to its database.
+  [ ] Allow configuration on a per group and per user level.
 
 Issues:
   [ ] Telegram does not accept images larger than 5Mb when sending via url

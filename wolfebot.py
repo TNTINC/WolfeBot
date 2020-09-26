@@ -137,7 +137,7 @@ def cb_owo(update: Update, context):
 UPDATER = Updater(TOKEN, use_context=True)
 for h in [
     CommandHandler('yiff', cb_yiff),
-    MessageHandler(Filters.regex(r"^yiff\s*"), cb_yiff),
+    MessageHandler(Filters.regex(r"^yiff\s*$"), cb_yiff),
 
     CommandHandler('start', cb_start),
     CommandHandler('help', cb_start),
